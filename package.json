@@ -3,7 +3,7 @@
   "title": "React Native Ecpay",
   "version": "1.0.0",
   "description": "TODO",
-  "main": "src/index.ts",
+  "main": "src/index.js",
   "files": [
     "README.md",
     "android",
