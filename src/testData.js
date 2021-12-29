@@ -1,14 +1,8 @@
-function getMMDDYYYY() {
-  return new Date()
-    .toISOString()
-    .replace(/^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(.+)Z/, "$3$2$1");
-}
 function getCurrentDateString() {
   return new Date()
     .toISOString()
     .replace(/^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(.+)Z/, "$1/$2/$3 $4:$5");
 }
-
 
 export const testingMerchantData = {
   merchantID: "2000132",
@@ -24,11 +18,7 @@ export const testing3DMerchantData = {
   aesIV: "EkRm7iFT261dpevs",
 };
 
-export function getTestingTradeTokenRequestData(
-  paymentType,
-  merchantId,
-  is3D,
-) {
+export function getTestingTradeTokenRequestData(paymentType, merchantId, is3D) {
   const periodType = "M";
   const frequency = 12; //至少要大於等於 1次以上。
   //當 PeriodType 設為 D 時，最多可設 365次。
@@ -57,15 +47,15 @@ export function getTestingTradeTokenRequestData(
     },
     CardInfo: {
       Redeem: "0",
-      PeriodAmount: paymentType == 0 ? 200 : 0, //當PaymentUIType為0時，此欄位必填 (必須等於TotalAmount)
+      PeriodAmount: paymentType === 0 ? 200 : 0, //當PaymentUIType為0時，此欄位必填 (必須等於TotalAmount)
       PeriodType: periodType,
       Frequency: frequency,
       ExecTimes: execTimes,
-      OrderResultURL: "https://www.microsoft.com/",
+      OrderResultURL: "https://www.ecpay.com.tw/",
       PeriodReturnURL: "https://www.ecpay.com.tw/",
       CreditInstallment: "3,12,24",
-      TravelStartDate: getMMDDYYYY(),
-      TravelEndDate: getMMDDYYYY(),
+      TravelStartDate: "01012020",
+      TravelEndDate: "01012029",
       TravelCounty: "001",
     },
     ATMInfo: {

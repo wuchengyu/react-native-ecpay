@@ -247,97 +247,101 @@ public class ReactNativeEcpayModule extends ReactContextBaseJavaModule {
                         WritableMap jsObject = Arguments.createMap();
                         jsObject.putInt("RtnCode", callbackData.getRtnCode());
                         jsObject.putString("RtnMsg", callbackData.getRtnMsg());
+                        
                         switch (callbackData.getCallbackStatus()) {
                             case Success: {
-                                jsObject.putString("Status", "Success");
+                                if (callbackData.getRtnCode() == 1) {
+                                    jsObject.putString("Status", "Success");
+    //                                jsObject.putInt("PaymentType", callbackData.getPaymentType().getType());
+    //                                jsObject.putString("PaymentTypeName", getPaymentTypeName(callbackData.getPaymentType()));
+                                    jsObject.putString("PaymentType", getPaymentTypeName(callbackData.paymentType));
 
-                                jsObject.putInt("PaymentType", callbackData.getPaymentType().getType());
-                                jsObject.putString("PaymentTypeName", getPaymentTypeName(callbackData.getPaymentType()));
-
-                                /* Order info */
-                                WritableMap orderInfo = Arguments.createMap();
-                                orderInfo.putString("merchantTradeNo", callbackData.getOrderInfo().getMerchantTradeNo());
-
-                                try {
-                                    Date convertedDate = dateFormat.parse(callbackData.getOrderInfo().getTradeDate());
-                                    orderInfo.putInt("TradeDate", (int) (convertedDate.getTime() / 1000));
-                                } catch (ParseException e) {
-                                    Log.e("OrderInfo", e.getMessage());
-                                    orderInfo.putInt("TradeDate", (int) (new Date().getTime() / 1000));
-                                }
-
-                                orderInfo.putString("tradeNo", callbackData.getOrderInfo().getTradeNo());
-                                jsObject.putMap("OrderInfo", orderInfo);
-
-
-                                if (callbackData.getPaymentType() == PaymentType.CreditCard || callbackData.getPaymentType() == PaymentType.CreditInstallment || callbackData.getPaymentType() == PaymentType.PeriodicFixedAmount || callbackData.getPaymentType() == PaymentType.NationalTravelCard) {
-                                    WritableMap cardInfo = Arguments.createMap();
-
-                                    cardInfo.putString("AuthCode", callbackData.getCardInfo().getAuthCode());
-                                    cardInfo.putString("Gwsr", callbackData.getCardInfo().getGwsr());
+                                    /* Order info */
+                                    WritableMap orderInfo = Arguments.createMap();
+                                    orderInfo.putString("merchantTradeNo", callbackData.getOrderInfo().merchantTradeNo);
 
                                     try {
-                                        Date convertedDate = dateFormat.parse(callbackData.getOrderInfo().getTradeDate());
-                                        cardInfo.putInt("ProcessDate", (int) (convertedDate.getTime() / 1000));
+                                        Date convertedDate = dateFormat.parse(callbackData.getOrderInfo().tradeDate);
+                                        orderInfo.putInt("TradeDate", (int) (convertedDate.getTime() / 1000));
                                     } catch (ParseException e) {
-                                        Log.e("CardInfo", e.getMessage());
-                                        cardInfo.putInt("ProcessDate", (int) (new Date().getTime() / 1000));
+                                        Log.e("OrderInfo", e.getMessage());
+                                        orderInfo.putInt("TradeDate", (int) (new Date().getTime() / 1000));
                                     }
 
-                                    cardInfo.putInt("Amount", callbackData.getCardInfo().getAmount());
-                                    cardInfo.putInt("Eci", callbackData.getCardInfo().getEci());
-                                    cardInfo.putString("Card6No", callbackData.getCardInfo().getCard6No());
-                                    cardInfo.putString("Card4No", callbackData.getCardInfo().getCard4No());
+                                    orderInfo.putString("tradeNo", callbackData.getOrderInfo().tradeNo);
+                                    jsObject.putMap("OrderInfo", orderInfo);
 
-                                    if (callbackData.getPaymentType() == PaymentType.CreditCard) {
-                                        cardInfo.putInt("RedDan", callbackData.getCardInfo().getRedDan());
-                                        cardInfo.putInt("RedDeAmt", callbackData.getCardInfo().getRedDeAmt());
-                                        cardInfo.putInt("RedOkAmt", callbackData.getCardInfo().getRedOkAmt());
-                                        cardInfo.putInt("RedYet", callbackData.getCardInfo().getRedYet());
+
+                                    if (callbackData.paymentType == PaymentType.CreditCard || callbackData.paymentType == PaymentType.CreditInstallment || callbackData.paymentType == PaymentType.PeriodicFixedAmount || callbackData.paymentType == PaymentType.NationalTravelCard) {
+                                        WritableMap cardInfo = Arguments.createMap();
+
+                                        cardInfo.putString("AuthCode", callbackData.getCardInfo().authCode);
+                                        cardInfo.putString("Gwsr", callbackData.getCardInfo().gwsr);
+
+                                        try {
+                                            Date convertedDate = dateFormat.parse(callbackData.getOrderInfo().tradeDate);
+                                            cardInfo.putInt("ProcessDate", (int) (convertedDate.getTime() / 1000));
+                                        } catch (ParseException e) {
+                                            Log.e("CardInfo", e.getMessage());
+                                            cardInfo.putInt("ProcessDate", (int) (new Date().getTime() / 1000));
+                                        }
+
+                                        cardInfo.putInt("Amount", callbackData.getCardInfo().amount);
+                                        cardInfo.putInt("Eci", callbackData.getCardInfo().eci);
+                                        cardInfo.putString("Card6No", callbackData.getCardInfo().card6No);
+                                        cardInfo.putString("Card4No", callbackData.getCardInfo().card4No);
+
+                                        if (callbackData.getPaymentType() == PaymentType.CreditCard) {
+                                            cardInfo.putInt("RedDan", callbackData.getCardInfo().redDan);
+                                            cardInfo.putInt("RedDeAmt", callbackData.getCardInfo().redDeAmt);
+                                            cardInfo.putInt("RedOkAmt", callbackData.getCardInfo().redOkAmt);
+                                            cardInfo.putInt("RedYet", callbackData.getCardInfo().redYet);
+                                        }
+
+                                        if (callbackData.getPaymentType() == PaymentType.CreditInstallment) {
+                                            cardInfo.putInt("Stage", callbackData.getCardInfo().stage);
+                                            cardInfo.putInt("Stast", callbackData.getCardInfo().stast);
+                                            cardInfo.putInt("Staed", callbackData.getCardInfo().staed);
+                                        }
+                                        jsObject.putMap("CardInfo", cardInfo);
+                                    } else {
+                                        jsObject.putNull("CardInfo");
                                     }
 
-                                    if (callbackData.getPaymentType() == PaymentType.CreditInstallment) {
-                                        cardInfo.putInt("Stage", callbackData.getCardInfo().getStage());
-                                        cardInfo.putInt("Stast", callbackData.getCardInfo().getStast());
-                                        cardInfo.putInt("Staed", callbackData.getCardInfo().getStaed());
+
+                                    if (callbackData.getPaymentType() == PaymentType.ATM) {
+                                        WritableMap ATMInfo = Arguments.createMap();
+                                        ATMInfo.putString("BankCode", callbackData.getAtmInfo().bankCode);
+                                        ATMInfo.putString("VAccount", callbackData.getAtmInfo().vAccount);
+                                        ATMInfo.putString("ExpireDate", callbackData.getAtmInfo().expireDate);
+                                        jsObject.putMap("ATMInfo", ATMInfo);
+                                    } else {
+                                        jsObject.putNull("ATMInfo");
                                     }
-                                    jsObject.putMap("CardInfo", cardInfo);
+
+                                    if (callbackData.getPaymentType() == PaymentType.CVS) {
+                                        WritableMap CVSInfo = Arguments.createMap();
+                                        CVSInfo.putString("PaymentNo", callbackData.getCvsInfo().paymentNo);
+                                        CVSInfo.putString("ExpireDate", callbackData.getCvsInfo().expireDate);
+                                        CVSInfo.putString("PaymentURL", callbackData.getCvsInfo().paymentURL);
+                                        jsObject.putMap("CVSInfo", CVSInfo);
+                                    } else {
+                                        jsObject.putNull("CVSInfo");
+                                    }
+
+                                    if (callbackData.getPaymentType() == PaymentType.Barcode) {
+                                        WritableMap barcodeInfo = Arguments.createMap();
+                                        barcodeInfo.putString("ExpireDate", callbackData.getBarcodeInfo().expireDate);
+                                        barcodeInfo.putString("Barcode1", callbackData.getBarcodeInfo().barcode1);
+                                        barcodeInfo.putString("Barcode2", callbackData.getBarcodeInfo().barcode2);
+                                        barcodeInfo.putString("Barcode3", callbackData.getBarcodeInfo().barcode3);
+                                        jsObject.putMap("BarcodeInfo", barcodeInfo);
+                                    } else {
+                                        jsObject.putNull("BarcodeInfo");
+                                    }
                                 } else {
-                                    jsObject.putNull("CardInfo");
+                                    jsObject.putString("Status", "Unknown");
                                 }
-
-
-                                if (callbackData.getPaymentType() == PaymentType.ATM) {
-                                    WritableMap ATMInfo = Arguments.createMap();
-                                    ATMInfo.putString("BankCode", callbackData.getAtmInfo().getBankCode());
-                                    ATMInfo.putString("VAccount", callbackData.getAtmInfo().getvAccount());
-                                    ATMInfo.putString("ExpireDate", callbackData.getAtmInfo().getExpireDate());
-                                    jsObject.putMap("ATMInfo", ATMInfo);
-                                } else {
-                                    jsObject.putNull("ATMInfo");
-                                }
-
-                                if (callbackData.getPaymentType() == PaymentType.CVS) {
-                                    WritableMap CVSInfo = Arguments.createMap();
-                                    CVSInfo.putString("PaymentNo", callbackData.getCvsInfo().getPaymentNo());
-                                    CVSInfo.putString("ExpireDate", callbackData.getCvsInfo().getExpireDate());
-                                    CVSInfo.putString("PaymentURL", callbackData.getCvsInfo().getPaymentURL());
-                                    jsObject.putMap("CVSInfo", CVSInfo);
-                                } else {
-                                    jsObject.putNull("CVSInfo");
-                                }
-
-                                if (callbackData.getPaymentType() == PaymentType.Barcode) {
-                                    WritableMap barcodeInfo = Arguments.createMap();
-                                    barcodeInfo.putString("ExpireDate", callbackData.getBarcodeInfo().getExpireDate());
-                                    barcodeInfo.putString("Barcode1", callbackData.getBarcodeInfo().getBarcode1());
-                                    barcodeInfo.putString("Barcode2", callbackData.getBarcodeInfo().getBarcode2());
-                                    barcodeInfo.putString("Barcode3", callbackData.getBarcodeInfo().getBarcode3());
-                                    jsObject.putMap("BarcodeInfo", barcodeInfo);
-                                } else {
-                                    jsObject.putNull("BarcodeInfo");
-                                }
-
                                 break;
                             }
                             case Fail: {
