@@ -1,52 +1,24 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
   View,
   TouchableOpacity,
+  Switch,
 } from 'react-native';
 import {
+  getSDKVersion,
   useReactNativeEcpayTestingToken,
   useTestingReactNativeEcpay,
 } from 'react-native-ecpay';
+import {Picker} from '@react-native-picker/picker';
+import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-const Section = ({children, title, onClicked}) => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <TouchableOpacity style={styles.sectionContainer} onPress={onClicked}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </TouchableOpacity>
-  );
-};
+const Row = ({children}) => <View style={styles.row}>{children}</View>;
+const Title = ({children}) => <Text style={styles.title}>{children}</Text>;
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -54,26 +26,32 @@ const App = () => {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-
+  const didMountRef = useRef(false);
   const [token, setToken] = useState('');
+  const [uiPaymentType, setUiPaymentType] = useState(2);
+  const [is3D, setIs3D] = useState(false);
+  const [result, setResult] = useState('');
   const {getTestingToken} = useReactNativeEcpayTestingToken(1);
-  const createPayment = useTestingReactNativeEcpay(console.log);
+  const createPayment = useTestingReactNativeEcpay(res =>
+    setResult(JSON.stringify(res)),
+  );
 
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const t = await getTestingToken(0);
-        console.log('eff', t);
-        setToken(t);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+    if (didMountRef.current) {
+      setToken('');
+      setResult('');
+    } else {
+      didMountRef.current = true;
+    }
+  }, [is3D, uiPaymentType]);
 
-    fetch();
-  }, [getTestingToken]);
+  const onTokenClicked = () => {
+    getTestingToken(uiPaymentType, is3D).then(t => {
+      setToken(t);
+    });
+  };
 
-  const onClicked = () => {
+  const onPaymentClicked = () => {
     if (!token) return;
     createPayment(token);
   };
@@ -81,53 +59,98 @@ const App = () => {
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Token" onClicked={onClicked}>
-            {token || ''}
-          </Section>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+      <Header />
+      <View
+        style={{
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        }}>
+        <Row>
+          <View style={{width: 100}}>
+            <Title>版本</Title>
+          </View>
+          <View style={{flex: 1}}>
+            <Title>{getSDKVersion()}</Title>
+          </View>
+        </Row>
+        <Row>
+          <View style={{width: 100}}>
+            <Title>類型</Title>
+          </View>
+          <View style={{flex: 1}}>
+            <Picker
+              selectedValue={uiPaymentType}
+              onValueChange={(itemValue, itemIndex) =>
+                setUiPaymentType(itemValue)
+              }>
+              <Picker.Item label="定期定額" value={0} />
+              <Picker.Item label="國旅卡" value={1} />
+              <Picker.Item label="付款選擇頁" value={2} />
+              <Picker.Item label="非交易類型" value={3} />
+            </Picker>
+          </View>
+        </Row>
+        <Row>
+          <View style={{width: 100}}>
+            <Title>3D 驗證</Title>
+          </View>
+          <Switch value={is3D} onValueChange={setIs3D} />
+        </Row>
+        <Row>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#B2B2FF',
+              borderRadius: 32,
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingVertical: 6,
+              marginVertical: 16,
+            }}
+            onPress={onTokenClicked}>
+            <Title>取得 Token</Title>
+          </TouchableOpacity>
+        </Row>
+        <Row>
+          <View style={{width: 100, paddingVertical: 16}}>
+            <Title>Token</Title>
+          </View>
+          <View style={{flex: 1}}>
+            <Text>{token}</Text>
+          </View>
+        </Row>
+        <Row>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#B2B2FF',
+              borderRadius: 32,
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingVertical: 6,
+              marginVertical: 16,
+            }}
+            onPress={onPaymentClicked}>
+            <Title>結帳測試</Title>
+          </TouchableOpacity>
+        </Row>
+        <Text style={{paddingHorizontal: 16}}>回傳</Text>
+        <Text style={{paddingHorizontal: 16}}>{result}</Text>
+      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  row: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  title: {
+    fontSize: 22,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  content: {
+    flex: 1,
   },
 });
 
