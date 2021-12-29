@@ -56,6 +56,11 @@ public class ReactNativeEcpayModule extends ReactContextBaseJavaModule {
         return "ReactNativeEcpay";
     }
 
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public String getSDKVersion() {
+        return PaymentkitManager.getPaymentgatewaykitVersion();
+    }
+
     @ReactMethod
     public void initialize(Integer type, Promise promise) {
         switch (type) {

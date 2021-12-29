@@ -56,6 +56,10 @@ export default class ReactNativeEcpay {
     );
   }
 
+  static getSDKVersion() {
+    return NativeModuleEcpay.getSDKVersion()
+  }
+
   /**
    * @param paymentUIType 0:定期定額, 1:國旅卡, 2:付款選擇清單頁, 3:用於非交易類型
    * @param is3D 是否開啟 3D 驗證
@@ -80,16 +84,6 @@ export default class ReactNativeEcpay {
         );
       }
       if (Platform.OS === "android") {
-        console.log(
-          instance.nativeModuleEcpay?.getTestingTradeToken,
-          merchantData,
-          is3D,
-          getTestingTradeTokenRequestData(
-            paymentUIType,
-            merchantData.merchantID,
-            !!is3D
-          )
-        );
         return instance.nativeModuleEcpay?.getTestingTradeToken(
           merchantData.merchantID,
           !!is3D,

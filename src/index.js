@@ -4,6 +4,10 @@ import ReactNativeEcpay from "./ReactNativeEcpay";
 
 export default ReactNativeEcpay;
 
+export function getSDKVersion() {
+  return ReactNativeEcpay.getSDKVersion();
+}
+
 export function useReactNativeEcpay(listener, serverType = 1) {
   const RNEcpay = new ReactNativeEcpay(serverType);
 
